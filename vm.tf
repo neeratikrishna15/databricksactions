@@ -13,7 +13,7 @@ resource "azurerm_virtual_network" "example" {
 }
 
 resource "azurerm_subnet" "example" {
-  name                 = "internal"
+  name                 = "testsubnet"
   resource_group_name  = azurerm_resource_group.example.name
   virtual_network_name = azurerm_virtual_network.example.name
   address_prefixes     = ["10.1.2.0/24"]
@@ -30,7 +30,7 @@ resource "azurerm_network_interface" "example" {
   resource_group_name = azurerm_resource_group.example.name
 
   ip_configuration {
-    name                          = "testsubnet"
+    name                          = "internal"
     subnet_id                     = azurerm_subnet.example.id
     private_ip_address_allocation = "Dynamic"
     public_ip_address_id = azurerm_public_ip.public_ip.id
