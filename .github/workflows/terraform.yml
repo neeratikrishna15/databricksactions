@@ -58,10 +58,10 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     env: 
-      ARM_CLIENT_ID: "8f440acc-b84f-4178-843e-0e56c3b54a74"
-      ARM_CLIENT_SECRET: "kdI8Q~s6pQAy3Wd1ocKcLe9zjuUIifBWamd8fa8M"
-      ARM_SUBSCRIPTION_ID: "4daf5ca9-14c9-431c-b6aa-90ec0451f571"
-      ARM_TENANT_ID: "ec25f121-f9c4-4650-a39c-47cd1939fe8b"
+      ARM_CLIENT_ID: 8f440acc-b84f-4178-843e-0e56c3b54a74
+      ARM_CLIENT_SECRET: kdI8Q~s6pQAy3Wd1ocKcLe9zjuUIifBWamd8fa8M
+      ARM_SUBSCRIPTION_ID: 4daf5ca9-14c9-431c-b6aa-90ec0451f571
+      ARM_TENANT_ID: ec25f121-f9c4-4650-a39c-47cd1939fe8b
          
 
     # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
