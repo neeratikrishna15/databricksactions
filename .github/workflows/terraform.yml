@@ -68,6 +68,8 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
     #Az login 
+    - name: Install Az
+      run: cirl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
     - name: Az login
       uses: az login --allow-no-subscriptions --service-principal -u "8f440acc-b84f-4178-843e-0e56c3b54a74" -p "kdI8Q~s6pQAy3Wd1ocKcLe9zjuUIifBWamd8fa8M" --tenant "ec25f121-f9c4-4650-a39c-47cd1939fe8b"
 
