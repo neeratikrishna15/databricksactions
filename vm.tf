@@ -36,7 +36,7 @@ resource "azurerm_network_interface" "example" {
     public_ip_address_id = azurerm_public_ip.public_ip.id
   }
 }
-
+#1
 resource "azurerm_windows_virtual_machine" "example" {
   name                = "example-machine"
   resource_group_name = azurerm_resource_group.example.name
