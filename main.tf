@@ -5,6 +5,12 @@ terraform {
       version = "3.87.0"
     }
   }
+  backend "azurerm" {
+    resource_group_name = "ngktest"
+    storage_account_name = "ngktfstate45001"
+    container_name = "tfstate"
+    key = "dev.tfstate"
+  }
 }
 
 
