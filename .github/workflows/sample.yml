@@ -28,9 +28,9 @@ jobs:
       - name: account show
         run: az account show
       - name: dbs show
-        run: echo "url=$(az databricks workspace list --resource-group ngktest --query [0].workspaceUrl)"  >> $GITHUB_ENV
+        run: echo "url=$(az databricks workspace list --resource-group ngktest --query [0].workspaceUrl | tr -d '"') "  >> $GITHUB_ENV
       - name: echo
-        run:  echo "newurl=${{ env.url }} | tr -d '"'" >> GITHUB_ENV
+        run:  echo ${{ env.url }}
       - name: create a job
         run: curl --netrc --request POST \
              https://${{ env.newurl }}/api/2.0/jobs/create \
