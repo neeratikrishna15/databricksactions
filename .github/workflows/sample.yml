@@ -16,10 +16,11 @@ jobs:
         run: |
           ls ${{ github.workspace }}
       - name: Install az cli
-        uses: azure/CLI@v1
-        with:
-          azcliversion: 2.30.0
-          inlineScript: |
-            az account show
+        - run: sudo apt-get install ca-certificates curl apt-transport-https lsb-release gnupg
+               curl -sL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/microsoft.gpg > /dev/null
+               AZ_REPO=$(lsb_release -cs)
+               echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ $AZ_REPO main" | sudo tee /etc/apt/sources.list.d/azure-cli.list
+               sudo apt-get update
+               sudo apt-get install azure-cli
         
       - run: echo "🍏 This job's status is ${{ job.status }}."
