@@ -16,6 +16,10 @@ jobs:
         run: |
           ls ${{ github.workspace }}
       - name: Install az cli
-          uses: elstudio/action-install-azure-cli@v1   
-          run: az login 
+        uses: azure/CLI@v1
+        with:
+          azcliversion: 2.30.0
+          inlineScript: |
+            az account show
+        
       - run: echo "🍏 This job's status is ${{ job.status }}."
