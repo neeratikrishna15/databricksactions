@@ -1,0 +1,33 @@
+  # name: data-factory-deploy
+  # uses: Azure/data-factory-deploy-action@v1.2.0
+  # with:
+  #   # Data Factory resource group name
+  #   resourceGroupName: 
+  #   # Data factory name
+  #   dataFactoryName: 
+  #   # ARM template file name
+  #   armTemplateFile: # optional, default is ARMTemplateForFactory.json
+  #   # ARM template parameters file name
+  #   armTemplateParametersFile: # optional, default is ARMTemplateParametersForFactory.json
+  #   # Parameters which will be replaced in the ARM template
+  #   additionalParameters: # optional, default is 
+  #   # Parameters which skip the Az module installation
+  #   skipAzModuleInstallation: # optional, default is false
+          
+
+
+  #     name: data-factory-deploy
+  #     uses: Azure/data-factory-deploy-action@v1.2.0
+  #     with:
+  #       # Data Factory resource group name
+  #       resourceGroupName: "example-resources"
+  #       # Data factory name
+  #       dataFactoryName: "ngktest451701"
+  #       # ARM template file name
+  #       armTemplateFile: # optional, default is ARMTemplateForFactory.json
+  #       # ARM template parameters file name
+  #       armTemplateParametersFile: # optional, default is ARMTemplateParametersForFactory.json
+  #       # Parameters which will be replaced in the ARM template
+  #       additionalParameters: # optional, default is 
+  #       # Parameters which skip the Az module installation
+  #       skipAzModuleInstallation: # optional, default is false
