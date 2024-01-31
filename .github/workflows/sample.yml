@@ -28,7 +28,7 @@ jobs:
       - name: account show
         run: az account show
       - name: dbs show
-        run: $url=az databricks workspace list --resource-group ngktest --query [0].workspaceUrl
+        run: url=$(az databricks workspace list --resource-group ngktest --query [0].workspaceUrl)
       - name: create a job
         run: curl --netrc --request POST \
              https://$url/api/2.0/jobs/create \
