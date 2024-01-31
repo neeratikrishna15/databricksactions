@@ -24,7 +24,7 @@ jobs:
             # sudo apt-get update
             # sudo apt-get install azure-cli
       - name: Login Az
-        run: az login --service-principal -u "29305fea-ccce-4dc6-b9ea-4f670909846e" -p "sYp8Q~ozBsHxAqXgmjJjBYzzRTMUKwk1bIUpvcyZ" --tenant "ec25f121-f9c4-4650-a39c-47cd1939fe8b" 
+        run: az login --service-principal -u 29305fea-ccce-4dc6-b9ea-4f670909846e -p sYp8Q~ozBsHxAqXgmjJjBYzzRTMUKwk1bIUpvcyZ --tenant ec25f121-f9c4-4650-a39c-47cd1939fe8b
       - name: account show
         run: az account show
       - name: dbs show
