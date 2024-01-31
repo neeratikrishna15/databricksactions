@@ -28,14 +28,14 @@ jobs:
       - name: account show
         run: az account show
       - name: dbs show
-        run: echo "url=$(az databricks workspace list --resource-group ngktest --query [0].workspaceUrl) | tr -d '"'" >> $GITHUB_ENV
+        run: echo "url=$(az databricks workspace list --resource-group ngktest --query [0].workspaceUrl)  >> $GITHUB_ENV
       - name: echo
-        run:  echo ${{ env.url }}
-      - name: create a job
-        run: curl --netrc --request POST \
-             https://"${{ env.url }}"/api/2.0/jobs/create \
-             --data @job.json \
-             | jq . 
+        run:  echo "newurl=${{ env.url }}" 
+      # - name: create a job
+      #   run: curl --netrc --request POST \
+      #        https://"${{ env.url }}"/api/2.0/jobs/create \
+      #        --data @job.json \
+      #        | jq . 
       - run: echo "🍏 This job's status is ${{ job.status }}."
 #az databricks workspace list --query [0].workspaceUrl
 #az account set --subscription 4daf5ca9-14c9-431c-b6aa-90ec0451f571
