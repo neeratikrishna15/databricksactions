@@ -25,8 +25,8 @@ jobs:
             # sudo apt-get install azure-cli
       - name: Login Az
         run: az login --service-principal -u "29305fea-ccce-4dc6-b9ea-4f670909846e" -p "sYp8Q~ozBsHxAqXgmjJjBYzzRTMUKwk1bIUpvcyZ" --tenant "ec25f121-f9c4-4650-a39c-47cd1939fe8b" 
-        run: az account set --subscription "4daf5ca9-14c9-431c-b6aa-90ec0451f571";
-        run: az account show;
-        run: az databricks workspace list --resource-group ngktest --query [0].workspaceUrl;
+             az account set --subscription 4daf5ca9-14c9-431c-b6aa-90ec0451f571
+             az account show
+             az databricks workspace list --resource-group ngktest --query [0].workspaceUrl
       - run: echo "🍏 This job's status is ${{ job.status }}."
 #az databricks workspace list --query [0].workspaceUrl
