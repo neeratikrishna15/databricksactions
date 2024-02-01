@@ -33,7 +33,7 @@ jobs:
         run:  echo ${{ env.url }}
       - name: create a job
         run: curl --netrc --request POST \
-             https://${{ env.url }}/api/2.0/jobs/create \
+             https://${{env.url}}/api/2.0/jobs/create \
              --data @job.json \
              | jq . 
       - run: echo "🍏 This job's status is ${{ job.status }}."
