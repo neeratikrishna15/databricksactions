@@ -30,7 +30,7 @@ jobs:
       - name: dbs show
         run: echo "url=$(az databricks workspace list --resource-group ngktest --query [0].workspaceUrl | tr -d '"' |tr -d ' ') "  >> $GITHUB_ENV
       - name: echo
-        run:  echo ${{ env.url }}
+        run:  newurl=(${{ env.url }}|tr -d ' ' )
       - name: create a job
         run: curl --netrc --request POST \
              https://${{env.url}}/api/2.0/jobs/create \
