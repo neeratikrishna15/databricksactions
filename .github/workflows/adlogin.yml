@@ -32,8 +32,9 @@ jobs:
     - name: list files
       run: |
           ls
-          file=base64 ./vm.tf >> $GITHUB_ENV
+          file=base64 vm.tf >> $GITHUB_ENV
           echo env.file
+      shell: bash    
       #working-directory: notebook/   
     - name: Print secret
       env:
