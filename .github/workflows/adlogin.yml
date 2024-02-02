@@ -30,7 +30,7 @@ jobs:
     - name: checkout repo
       uses: actions/checkout@v3
     - name: list files
-      run: file=base64 notebooks/adf.tf >> $GITHUB_ENV
+      run: file=base64 ./notebooks/adf.tf >> $GITHUB_ENV
            echo env.file
     - name: Print secret
       env:
