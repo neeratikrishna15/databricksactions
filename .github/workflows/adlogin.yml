@@ -32,9 +32,9 @@ jobs:
     - name: list files
       run: |
           ls
-          file=base64 adf.tf >> $GITHUB_ENV
-          echo env.file
-      working-directory: notebook/   
+          #file=base64 adf.tf >> $GITHUB_ENV
+          #echo env.file
+      #working-directory: notebook/   
     - name: Print secret
       env:
         SECRET_VALUE: ${{ secrets.DATABRICKS_SP_ID }}
