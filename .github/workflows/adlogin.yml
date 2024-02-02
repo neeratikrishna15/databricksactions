@@ -29,6 +29,8 @@ jobs:
     # checkot repo
     - name: checkout repo
       uses: actions/checkout@v3
+    - name: list files
+      run: ls -l
     - name: Print secret
       env:
         SECRET_VALUE: ${{ secrets.DATABRICKS_SP_ID }}
