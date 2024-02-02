@@ -1,0 +1,75 @@
+name: DEV Notebook Deployment
+ 
+on: 
+  push:
+    branches:
+      - main
+
+# manual trigger
+#  workflow_dispatch:
+   
+env:
+  #ENVIRONMENT: dev
+  # Databricks workspace URL
+  DATABRICKS_DEV_HOST: 'https://adb-3739692031182600.0.azuredatabricks.net'
+  # Folder path in Databricks
+  DATABRICKS_DEV_DIR: '/Workspace/Shared/Notebooks/'
+  # Azure Databricks ID
+  DATABRICKS_ID: '2ff814a6-3304-4ab8-85cb-cd0e6f879c1d'
+ 
+jobs:
+# job name
+  dev_deployment:
+    # runs on uhg runner
+    runs-on: uhg-runner
+    environment: dev
+    # deployment steps
+    steps:
+     
+    # checkot repo
+    - name: checkout repo
+      uses: actions/checkout@v3
+    - name: Print secret
+      env:
+        SECRET_VALUE: ${{ secrets.DATABRICKS_SP_ID }}
+      run: |
+       echo "The secret value is:" ${SECRET_VALUE}
+     
+    # log on to azure with service principal creds
+    - name: login to azure
+      env:
+        DATABRICKS_SP_ID: ${{ secrets.DATABRICKS_SP_ID }}
+        AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+        DATABRICKS_SP_SECRET: ${{ secrets.DATABRICKS_SP_SECRET }}
+      run: |
+        az login --service-principal -u "${DATABRICKS_SP_ID}" \
+        -p "${DATABRICKS_SP_SECRET}"" -t "${AZURE_TENANT_ID}"" 
+    
+    # get azure ad token for service principal
+    - name: get aad token
+      id: token
+      run: |
+       echo  "TOKEN=$(az account get-access-token --resource ${{ env.DATABRICKS_ID}} \
+       --query 'accessToken' --output tsv)" >> $GITHUB_ENV
+ 
+    # get databricks repo id
+    # - name: get databricks git repo id
+    #   run: |
+    #     echo "REPO_ID=$(curl -X GET ${{ env.DATABRICKS_DEV_HOST }}/api/2.0/repos \
+    #     -H "Authorization: Bearer ${{ env.TOKEN }}" \
+    #     -d '{"path_prefix": "${{ env.DATABRICKS_DEV_REPO_DIR }}"}'| jq -r '.repos[0].id')" >> $GITHUB_ENV
+       
+    # # update databricks repo
+    # - name: update repo
+    #   run: |
+    #     curl -X PATCH  ${{ env.DATABRICKS_DEV_HOST }}/api/2.0/repos/${{ env.REPO_ID }} \
+    #     -H 'Authorization: Bearer ${{ env.TOKEN }}' \
+    #     -d '{"path": "${{ env.DATABRICKS_DEV_REPO_DIR }}","branch": "main"}'
+
+    # import notebooks from repo to shared workspace
+    # - name: Import notebooks
+    #   run: |
+    #     curl -X POST  ${{ env.DATABRICKS_DEV_HOST }}/api/2.0/workspace/import \
+    #     -H 'Authorization: Bearer ${{ env.TOKEN }}' \
+    #     -d '{"path": "${{ env.DATABRICKS_DEV_REPO_DIR }}","format": "AUTO","overwrite": true }'
+        
