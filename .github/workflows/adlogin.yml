@@ -42,8 +42,8 @@ jobs:
         AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
         DATABRICKS_SP_SECRET: ${{ secrets.DATABRICKS_SP_SECRET }}
       run: |
-        az login --service-principal -u "${DATABRICKS_SP_ID}" \
-        -p "${DATABRICKS_SP_SECRET}"" -t "${AZURE_TENANT_ID}"" 
+        az login --service-principal -u "$DATABRICKS_SP_ID" \
+        -p "$DATABRICKS_SP_SECRET" -t "$AZURE_TENANT_ID" 
     
     # get azure ad token for service principal
     - name: get aad token
