@@ -32,10 +32,10 @@ jobs:
     - name: list files
       run: |
           cat vm.tf
-          #file=base64 vm.tf >> $GITHUB_ENV
+          #file=base64 notebook1 >> $GITHUB_ENV
           #echo env.file
       shell: bash    
-      #working-directory: notebook/   
+      working-directory: notebooks
     - name: Print secret
       env:
         SECRET_VALUE: ${{ secrets.DATABRICKS_SP_ID }}
