@@ -29,9 +29,10 @@ jobs:
     # checkot repo
     - name: checkout repo
       uses: actions/checkout@v3
+      
     - name: list files
       run: |
-          cat "${{ github.action_path }}/notebooks/notebook1"
+          ls -l notebooks
           #file=base64 notebook1 >> $GITHUB_ENV
           #echo env.file
       shell: bash    
