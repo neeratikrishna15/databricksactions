@@ -32,6 +32,7 @@ jobs:
       
     - name: list files
       run: |
+          pwd
           ls -l notebooks
           #file=base64 notebook1 >> $GITHUB_ENV
           #echo env.file
