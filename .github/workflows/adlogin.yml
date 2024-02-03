@@ -87,11 +87,12 @@ jobs:
           
           for file in $(ls $REPO_PATH); do
             echo "Importing $file to Databricks..."
+            base64_content=$(base64 -w 0 $REPO_PATH/$file)
             curl -X POST \
               -H "Authorization: Bearer ${{ env.TOKEN }}" \
               -F path="$DATABRICKS_PATH/$file" \
               -F format="SOURCE" \
-              -F content=@$REPO_PATH/$file \
+              -F content="$base64_content" \
               "${{ env.DATABRICKS_DEV_HOST }}/api/2.0/workspace/import"
           done  
         
