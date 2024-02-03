@@ -37,7 +37,7 @@ jobs:
     - name: list files
       run: |
           pwd;ls -l notebooks;mynotebook=$(base64 notebooks/notebook1.py) >> $GITHUB_ENV
-          
+          echo '${{ github.workspace }}'
           #file=base64 notebook1 >> $GITHUB_ENV
           #echo ${{ env.mynotebook }}
       shell: bash    
