@@ -29,7 +29,11 @@ jobs:
     # checkot repo
     - name: checkout repo
       uses: actions/checkout@v3
-      
+    - name: publish artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: 'notebooks'
+        path: '${{ github.workspace }}/NOTEBOOKS'
     - name: list files
       run: |
           pwd;ls -l notebooks;mynotebook=$(base64 notebooks/notebook1.py) >> $GITHUB_ENV
