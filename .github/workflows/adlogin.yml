@@ -84,12 +84,12 @@ jobs:
       run: zip -r parent_folder.zip ./notebooks  
     - name: read and deploy
       run: |
-         REPO_PATH="./notebooks"
+         
          DATABRICKS_PATH="/Shared/notebooksimport"
          curl -X POST \
          -H "Authorization: Bearer ${{ env.TOKEN }}" \
          -F path="$DATABRICKS_PATH" \
-         -F format="SOURCE" \
+         -F format="ZIP" \
          -F content=@parent_folder.zip \
          "${{ env.DATABRICKS_DEV_HOST }}/api/2.0/workspace/import"
 
