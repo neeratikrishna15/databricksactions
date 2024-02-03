@@ -86,19 +86,18 @@ jobs:
          DATABRICKS_PATH="/Shared/notebooksimport"
           
 
-          for item in $(ls -A $REPO_PATH); do
-            if [ -f "$REPO_PATH/$item" ]; then
-              echo "Importing $item to Databricks..."
-              base64_content=$(base64 -w 0 "$REPO_PATH/$item")
-              curl -X POST \
-                -H "Authorization: Bearer ${{ env.TOKEN }}" \
-                -F path="$DATABRICKS_PATH/$item" \
-                -F format="SOURCE" \
-                -F content="$base64_content" \
-                "${{ env.DATABRICKS_DEV_HOST }}/api/2.0/workspace/import"
-            else
-              echo "$item is a directory, skipping..."
-            fi
+          
+
+          find "$REPO_PATH" -type f | while read -r file; do
+            filename=$(basename "$file")
+            echo "File $filename is being imported to Databricks..."
+            base64_content=$(base64 -w 0 "$file")
+            curl -X POST \
+              -H "Authorization: Bearer ${{ env.TOKEN }}" \
+              -F path="$DATABRICKS_PATH/$filename" \
+              -F format="SOURCE" \
+              -F content="$base64_content" \
+              "${{ env.DATABRICKS_DEV_HOST }}/api/2.0/workspace/import"
           done
         
     # get databricks repo id
