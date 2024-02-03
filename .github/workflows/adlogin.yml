@@ -43,7 +43,7 @@ jobs:
       shell: bash    
     - name: get the list of files along with path
       run: |
-          find . -type f -name "*" -print0
+          find ./notebooks -type f -name "*" -print0
       #working-directory: notebooks
     - name: Print secret
       env:
