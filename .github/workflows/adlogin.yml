@@ -75,7 +75,11 @@ jobs:
 
     - name: List directories
       run: |
-        curl -X GET  ${{ env.DATABRICKS_DEV_HOST }}/api/2.0/workspace/list -H 'Authorization: Bearer ${{ env.TOKEN }}' -d '{"path":"/Shared/notebooksimport"}' | jq -r '.objects[].path'
+        destination_filelist=$(curl -X GET  ${{ env.DATABRICKS_DEV_HOST }}/api/2.0/workspace/list -H 'Authorization: Bearer ${{ env.TOKEN }}' -d '{"path":"/Shared/notebooksimport"}')
+        echo $destination_filelist | jq -r '.objects[].path' >  paths.txt
+          
+    - name: Display paths
+      run: cat paths.txt
         
     # get databricks repo id
     # - name: get databricks git repo id
