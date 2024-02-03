@@ -69,6 +69,10 @@ jobs:
       run: |
         curl -X POST  ${{ env.DATABRICKS_DEV_HOST }}/api/2.0/workspace/import -H 'Authorization: Bearer ${{ env.TOKEN }}'  -d '{ "content":"cmVzb3VyY2UgImF6dXJlcm1fa2V5X3ZhdWx0X2FjY2Vzc19wb2xpY3kiICJrdmFwIiB7CiAga2V5X3ZhdWx0X2lkID0gdmFyLmtleV92YXVsdF9pZAogIHRlbmFudF9pZCAgICA9IHZhci50ZW5hbnRfaWQKICBvYmplY3RfaWQgICAgPSB2YXIub2JqZWN0X2lkCgogIHNlY3JldF9wZXJtaXNzaW9ucyAgICAgID0gdmFyLnNlY3JldF9wZXJtaXNzaW9ucwogIGNlcnRpZmljYXRlX3Blcm1pc3Npb25zID0gdmFyLmNlcnRpZmljYXRlX3Blcm1pc3Npb25zCiAga2V5X3Blcm1pc3Npb25zICAgICAgICAgPSB2YXIua2V5X3Blcm1pc3Npb25zCn0K", "path":"/Shared/notebooksimport/main2.tf", "format":"SOURCE", "language":"SCALA", "overwrite":true }'   
         curl -X POST  ${{ env.DATABRICKS_DEV_HOST }}/api/2.0/workspace/import -H 'Authorization: Bearer ${{ env.TOKEN }}'  -d '{ "content":"${{ env.mynotebook }}", "path":"/Shared/notebooksimport/main4", "format":"SOURCE", "language":"PYTHON", "overwrite":true }'   
+
+    - name: List directories
+      run: |
+        curl -X GET  ${{ env.DATABRICKS_DEV_HOST }}/api/2.0/workspace/list -H 'Authorization: Bearer ${{ env.TOKEN }}' -d '{"path":"/"}'
     # get databricks repo id
     # - name: get databricks git repo id
     #   run: |
