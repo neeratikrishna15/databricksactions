@@ -80,6 +80,20 @@ jobs:
           
     - name: Display paths
       run: cat paths.txt
+    - name: read and deploy
+      run: |
+         REPO_PATH="./notebooks"
+         DATABRICKS_PATH="/Shared/notebooksimport"
+          
+          for file in $(ls $REPO_PATH); do
+            echo "Importing $file to Databricks..."
+            curl -X POST \
+              -H "Authorization: Bearer ${{ env.TOKEN }}" \
+              -F path="$DATABRICKS_PATH/$file" \
+              -F format="SOURCE" \
+              -F content=@$REPO_PATH/$file \
+              "${{ env.DATABRICKS_DEV_HOST }}/api/2.0/workspace/import"
+          done  
         
     # get databricks repo id
     # - name: get databricks git repo id
