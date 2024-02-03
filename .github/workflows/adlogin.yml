@@ -72,7 +72,7 @@ jobs:
 
     - name: List directories
       run: |
-        curl -X GET  ${{ env.DATABRICKS_DEV_HOST }}/api/2.0/workspace/list -H 'Authorization: Bearer ${{ env.TOKEN }}' -d '{"path":"/"}'
+        curl -X GET  ${{ env.DATABRICKS_DEV_HOST }}/api/2.0/workspace/list -H 'Authorization: Bearer ${{ env.TOKEN }}' -d '{"path":"/Shared/notebooks"}'
     # get databricks repo id
     # - name: get databricks git repo id
     #   run: |
