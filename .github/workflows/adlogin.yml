@@ -32,10 +32,10 @@ jobs:
       
     - name: list files
       run: |
-          pwd;ls -l notebooks;mynotebook=base64 notebooks/notebook1 >> $GITHUB_ENV
+          pwd;ls -l notebooks;mynotebook=$(base64 notebooks/notebook1) #>> $GITHUB_ENV
           #cat newnotebook64
           #file=base64 notebook1 >> $GITHUB_ENV
-          echo env.mynotebook
+          echo ${mynotebook}
       shell: bash    
       #working-directory: notebooks
     - name: Print secret
