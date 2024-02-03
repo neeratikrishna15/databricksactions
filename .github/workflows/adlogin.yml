@@ -91,7 +91,7 @@ jobs:
           find "$REPO_PATH" -type f | while read -r file; do
             filename=$(basename "$file")
             echo "File $filename is being imported to Databricks..."
-            base64_content=$(base64 -w 0 "$file")
+            base64_content=$(base64 "$file")
             curl -X POST \
               -H "Authorization: Bearer ${{ env.TOKEN }}" \
               -F path="$DATABRICKS_PATH/$filename" \
