@@ -99,7 +99,7 @@ jobs:
           -F format="SOURCE" \
           -F content="$base64_content" \
           "https://$DATABRICKS_HOST/api/2.0/workspace/import"
-      done 
+       done 
         
 
           # find "$REPO_PATH" -type f | while read -r file; do
