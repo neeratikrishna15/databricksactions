@@ -98,7 +98,7 @@ jobs:
           -F path="$DATABRICKS_PATH/$filename" \
           -F format="SOURCE" \
           -F content="$base64_content" \
-          "https://$DATABRICKS_HOST/api/2.0/workspace/import"
+          "$DATABRICKS_HOST/api/2.0/workspace/import"
        done 
         
 
