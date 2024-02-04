@@ -90,7 +90,7 @@ jobs:
        DATABRICKS_PATH="/Shared/notebooksimport"
       
        find "$REPO_PATH" -type f | while read -r file; do
-        filename=$(basename "$file")
+        filename=$file
         echo "File $filename is being imported to Databricks..."
         base64_content=$(base64 -w 0 "$file")
         curl -X POST \
