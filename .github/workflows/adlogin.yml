@@ -84,16 +84,23 @@ jobs:
       run: zip -r parent_folder.zip ./notebooks  
     - name: read and deploy
       run: |
-         
-         DATABRICKS_PATH="/Shared/notebooksimport"
-         curl -X POST \
-         -H "Authorization: Bearer ${{ env.TOKEN }}" \
-         -F path="$DATABRICKS_PATH" \
-         -F format="ZIP" \
-         -F content=@parent_folder.zip \
-         "${{ env.DATABRICKS_DEV_HOST }}/api/2.0/workspace/import"
-
-          
+       TOKEN=${{ env.TOKEN }}
+       DATABRICKS_HOST=${{ env.DATABRICKS_DEV_HOST }}
+       REPO_PATH="./notebooks"
+       DATABRICKS_PATH="/Shared/notebooksimport"
+      
+       find "$REPO_PATH" -type f | while read -r file; do
+        filename=$(basename "$file")
+        echo "File $filename is being imported to Databricks..."
+        base64_content=$(base64 -w 0 "$file")
+        curl -X POST \
+          -H "Authorization: Bearer $TOKEN" \
+          -F path="$DATABRICKS_PATH/$filename" \
+          -F format="SOURCE" \
+          -F content="$base64_content" \
+          "https://$DATABRICKS_HOST/api/2.0/workspace/import"
+      done 
+        
 
           # find "$REPO_PATH" -type f | while read -r file; do
           #   filename=$(basename "$file")
