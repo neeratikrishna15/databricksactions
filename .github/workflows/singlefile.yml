@@ -60,5 +60,5 @@ jobs:
           #cat temp.json
           curl -X POST  "${{ env.DATABRICKS_DEV_HOST }}/api/2.0/workspace/mkdirs" \
           -H "Authorization: Bearer ${{ env.TOKEN }}" \
-          -d "$mkdirs_json"
+          -d "{ \"content\": \"$filebase64\", \"path\": \"/Shared/notebooksimport/$filepath\", \"format\": \"AUTO\", \"overwrite\": true }"
         done
