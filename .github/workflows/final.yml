@@ -15,43 +15,44 @@ jobs:
     runs-on: ubuntu-latest
     environment: dev
     steps:
-      - name: checkout repo
-        uses: actions/checkout@v3
+    - name: checkout repo
+      uses: actions/checkout@v3
       
-      - name: publish artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: 'notebooks'
-          path: '${{ github.workspace }}/NOTEBOOKS'
+    - name: publish artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: 'notebooks'
+        path: '${{ github.workspace }}/NOTEBOOKS'
       
-      - name: Print secret
-        env:
-          SECRET_VALUE: ${{ secrets.DATABRICKS_SP_ID }}
-        run: |
-          echo "The secret value is: $SECRET_VALUE"
+    - name: Print secret
+      env:
+        SECRET_VALUE: ${{ secrets.DATABRICKS_SP_ID }}
+      run: |
+       echo "The secret value is:" ${SECRET_VALUE}
      
-      - name: login to azure
-        env:
-          DATABRICKS_SP_ID: ${{ secrets.DATABRICKS_SP_ID }}
-          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-          DATABRICKS_SP_SECRET: ${{ secrets.DATABRICKS_SP_SECRET }}
-        run: |
-          az login --service-principal -u "$DATABRICKS_SP_ID" \
-          -p "$DATABRICKS_SP_SECRET" -t "$AZURE_TENANT_ID" 
+    - name: login to azure
+      env:
+        DATABRICKS_SP_ID: ${{ secrets.DATABRICKS_SP_ID }}
+        AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+        DATABRICKS_SP_SECRET: ${{ secrets.DATABRICKS_SP_SECRET }}
+      run: |
+        az login --service-principal -u "$DATABRICKS_SP_ID" \
+        -p "$DATABRICKS_SP_SECRET" -t "$AZURE_TENANT_ID" 
     
-      - name: get aad token
-        id: token
-        run: |
-          echo "TOKEN=$(az account get-access-token --resource $DATABRICKS_ID --query 'accessToken' --output tsv)" >> $GITHUB_ENV
+    - name: get aad token
+      id: token
+      run: |
+       echo  "TOKEN=$(az account get-access-token --resource ${{ env.DATABRICKS_ID}} \
+       --query 'accessToken' --output tsv)" >> $GITHUB_ENV
     
-      - name: get the list of files and import
-        run: |
-          find ./notebooks -type f -name "*" -print0 | while IFS= read -r -d '' file; do
-            echo "Processing file: $file"
-            filepath=$(echo $file | sed 's#^\.\/notebooks\/##')
-            filebase64=$(base64 "$file")
-            echo "$filebase64"
-            curl -X POST "${DATABRICKS_DEV_HOST}/api/2.0/workspace/import" \
-            -H "Authorization: Bearer $TOKEN" \
-            -d "{ \"content\":\"$filebase64\", \"path\":\"/Shared/notebooksimport/$filepath\", \"format\":\"AUTO\", \"overwrite\": true }"
-          done
+    - name: get the list of files and import
+      run: |
+        find ./notebooks -type f -name "*" -print0 | while IFS= read -r -d '' file; do
+          echo "Processing file: $file"x
+          filepath=$(echo $file | sed 's#^\.\/notebooks\/##')
+          filebase64=$(base64 $file) >> $GITHUB.env
+          echo ${filebase64}
+          curl -X POST  ${{ env.DATABRICKS_DEV_HOST }}/api/2.0/workspace/import \
+          -H 'Authorization: Bearer ${{ env.TOKEN }}' \
+          -d '{ "content":"${{ env.filebase64 }}", "path":"/Shared/notebooksimport/$filepath", "format":"AUTO","overwrite": true }'
+        done
