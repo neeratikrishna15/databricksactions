@@ -54,7 +54,7 @@ jobs:
           echo "${{ env.filepath }}"
           filebase64=$(base64 "$file")
           echo "$filebase64"
-          mkdirs_json="{ \"content\": \"$filebase64\", \"path\": \"/Shared/notebooksimport/$filepath\", \"format\": \"AUTO\", \"overwrite\": true }"|tr -d '\n' > temp.json
+          echo "{ \"content\": \"$filebase64\", \"path\": \"/Shared/notebooksimport/$filepath\", \"format\": \"AUTO\", \"overwrite\": true }"|tr -d '\n' > temp.json
           echo "$mkdirs_json" 
           #echo "$mkdirs_json" | jq -c '.' > temp.json
           cat temp.json
