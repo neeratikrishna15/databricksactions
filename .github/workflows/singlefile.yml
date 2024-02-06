@@ -28,7 +28,7 @@ jobs:
       env:
         SECRET_VALUE: ${{ secrets.DATABRICKS_SP_ID }}
       run: |
-       echo "The secret value is:" ${SECRET_VALUE}
+        echo "The secret value is: $SECRET_VALUE"
      
     - name: login to azure
       env:
@@ -42,23 +42,21 @@ jobs:
     - name: get aad token
       id: token
       run: |
-       echo  "TOKEN=$(az account get-access-token --resource ${{ env.DATABRICKS_ID}} \
-       --query 'accessToken' --output tsv)" >> $GITHUB_ENV
+        echo "TOKEN=$(az account get-access-token --resource ${{ env.DATABRICKS_ID}} \
+        --query 'accessToken' --output tsv)" >> $GITHUB_ENV
     
     - name: get the list of files and import
       run: |
         find ./notebooks -type f -name "*" -print0 | while IFS= read -r -d '' file; do
           echo "Processing file: $file"
-          filepath=$(echo $file | sed 's#^\.\/notebooks\/##')
-          echo $filepath
-          echo ${{ env.filepath }}
-          filebase64=$(base64 $file) >> $GITHUB.env
-          echo ${filebase64}
+          filepath=$(echo "$file" | sed 's#^\.\/notebooks\/##')
+          echo "$filepath"
+          echo "${{ env.filepath }}"
+          filebase64=$(base64 "$file")
+          echo "$filebase64"
           mkdirs_json="{ \"content\": \"$filebase64\", \"path\": \"/Shared/notebooksimport/$filepath\", \"format\": \"AUTO\", \"overwrite\": true }"
-          echo ${mkdirs_json}
-          curl -X POST  ${{ env.DATABRICKS_DEV_HOST }}/api/2.0/workspace/mkdirs \
-          -H 'Authorization: Bearer ${{ env.TOKEN }}' \
-          -d ${mkdirs_json}
+          echo "$mkdirs_json"
+          curl -X POST  "${{ env.DATABRICKS_DEV_HOST }}/api/2.0/workspace/mkdirs" \
+          -H "Authorization: Bearer ${{ env.TOKEN }}" \
+          -d "$mkdirs_json"
         done
-        
-          
