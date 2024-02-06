@@ -54,11 +54,11 @@ jobs:
           echo "${{ env.filepath }}"
           filebase64=$(base64 "$file")
           echo "$filebase64"
-          mkdirs_json="{ \"content\": \"$filebase64\", \"path\": \"/Shared/notebooksimport/$filepath\", \"format\": \"AUTO\", \"overwrite\": true }"
+          mkdirs_json="{ \"content\": \"$filebase64\", \"path\": \"/Shared/notebooksimport/$filepath\", \"format\": \"AUTO\", \"overwrite\": true }"|tr -d '\n'
           echo "$mkdirs_json" 
-          #echo "$mkdirs_json" | jq -c '.' > temp.json
+          echo "$mkdirs_json" | jq -c '.' > temp.json
           #cat temp.json
-          curl -X POST "${{ env.DATABRICKS_DEV_HOST }}/api/2.0/workspace/mkdirs" -H "Authorization: Bearer ${{ env.TOKEN }}" -d "{\"content\": \"$filebase64\", \"path\": \"/Shared/notebooksimport/$filepath\", \"format\": \"AUTO\", \"overwrite\": true}"
+          #curl -X POST "${{ env.DATABRICKS_DEV_HOST }}/api/2.0/workspace/mkdirs" -H "Authorization: Bearer ${{ env.TOKEN }}" -d ""
 
           done
         
