@@ -51,6 +51,7 @@ jobs:
           echo "Processing file: $file"
           filepath=$(echo $file | sed 's#^\.\/notebooks\/##') >> $GITHUB_ENV
           echo $filepath
+          echo ${{ env.filepath }}
           filebase64=$(base64 $file) >> $GITHUB.env
           echo ${filebase64}
           curl -X POST  ${{ env.DATABRICKS_DEV_HOST }}/api/2.0/workspace/import \
