@@ -52,5 +52,5 @@ jobs:
           filebase64=$(base64 $file) >> $GITHUB.env
           curl -X POST  ${{ env.DATABRICKS_DEV_HOST }}/api/2.0/workspace/import \
           -H 'Authorization: Bearer ${{ env.TOKEN }}' \
-          -d '{ "content":"${{ env.filebase64 }}", "path":"/Shared/notebooksimport/${file}", "overwrite":true }'
+          -d '{ "content":"${{ env.filebase64 }}", "path":"/Shared/notebooksimport/${file}" }'
         done
