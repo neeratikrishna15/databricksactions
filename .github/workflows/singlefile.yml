@@ -54,8 +54,8 @@ jobs:
           echo ${{ env.filepath }}
           filebase64=$(base64 $file) >> $GITHUB.env
           echo ${filebase64}
-          curl -X POST  ${{ env.DATABRICKS_DEV_HOST }}/api/2.0/workspace/import \
+          curl -X POST  ${{ env.DATABRICKS_DEV_HOST }}/api/2.0/workspace/mkdirs \
           -H 'Authorization: Bearer ${{ env.TOKEN }}' \
-          -d '{ "content":"${{ env.filebase64 }}", "path":"/Shared/notebooksimport/new.py", "format":"AUTO","overwrite": true }'
+          -d '{ "content":"${{ env.filebase64 }}", "path":"/Shared/notebooksimport/${{ env.filepath }}", "format":"AUTO","overwrite": true }'
         
           
