@@ -1,4 +1,4 @@
-name: Final Deployment
+name: teritho Deployment
 
 on: 
   push:
