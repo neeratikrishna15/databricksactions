@@ -1,0 +1,93 @@
+name: Final Deployment
+ 
+on: 
+  push:
+    branches:
+      - main
+
+# manual trigger
+#  workflow_dispatch:
+   
+env:
+  #ENVIRONMENT: dev
+  # Databricks workspace URL
+  DATABRICKS_DEV_HOST: 'https://adb-2581107687693310.10.azuredatabricks.net'
+  # Folder path in Databricks
+  DATABRICKS_DEV_DIR: '/Workspace/Shared/Notebooks/'
+  # Azure Databricks ID
+  DATABRICKS_ID: '2ff814a6-3304-4ab8-85cb-cd0e6f879c1d'
+ 
+jobs:
+# job name
+  dev_deployment:
+    # runs on uhg runner
+    runs-on: ubuntu-latest
+    environment: dev
+    # deployment steps
+    steps:
+     
+    # checkot repo
+    - name: checkout repo
+      uses: actions/checkout@v3
+    - name: publish artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: 'notebooks'
+        path: '${{ github.workspace }}/NOTEBOOKS'
+    - name: list files
+      run: |
+          pwd;ls -l notebooks;mynotebook=$(base64 notebooks/notebook1.py) >> $GITHUB_ENV
+          echo '${{ github.workspace }}'
+          #file=base64 notebook1 >> $GITHUB_ENV
+          #echo ${{ env.mynotebook }}
+      shell: bash    
+    - name: get the list of files along with path
+      run: |
+          find ./notebooks -type f -name "*" -print0 | while IFS= read -r -d '' file; do echo "Processing file: $file"; done
+      #working-directory: notebooks
+    - name: Print secret
+      env:
+        SECRET_VALUE: ${{ secrets.DATABRICKS_SP_ID }}
+      run: |
+       echo "The secret value is:" ${SECRET_VALUE}
+     
+    # log on to azure with service principal creds
+    - name: login to azure
+      env:
+        DATABRICKS_SP_ID: ${{ secrets.DATABRICKS_SP_ID }}
+        AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+        DATABRICKS_SP_SECRET: ${{ secrets.DATABRICKS_SP_SECRET }}
+      run: |
+        az login --service-principal -u "$DATABRICKS_SP_ID" \
+        -p "$DATABRICKS_SP_SECRET" -t "$AZURE_TENANT_ID" 
+    
+    # get azure ad token for service principal
+    - name: get aad token
+      id: token
+      run: |
+       echo  "TOKEN=$(az account get-access-token --resource ${{ env.DATABRICKS_ID}} \
+       --query 'accessToken' --output tsv)" >> $GITHUB_ENV
+        # import notebooks from repo to shared workspace
+    - name: Import notebooks
+      run: |
+        curl -X POST  ${{ env.DATABRICKS_DEV_HOST }}/api/2.0/workspace/import -H 'Authorization: Bearer ${{ env.TOKEN }}'  -d '{ "content":"cmVzb3VyY2UgImF6dXJlcm1fa2V5X3ZhdWx0X2FjY2Vzc19wb2xpY3kiICJrdmFwIiB7CiAga2V5X3ZhdWx0X2lkID0gdmFyLmtleV92YXVsdF9pZAogIHRlbmFudF9pZCAgICA9IHZhci50ZW5hbnRfaWQKICBvYmplY3RfaWQgICAgPSB2YXIub2JqZWN0X2lkCgogIHNlY3JldF9wZXJtaXNzaW9ucyAgICAgID0gdmFyLnNlY3JldF9wZXJtaXNzaW9ucwogIGNlcnRpZmljYXRlX3Blcm1pc3Npb25zID0gdmFyLmNlcnRpZmljYXRlX3Blcm1pc3Npb25zCiAga2V5X3Blcm1pc3Npb25zICAgICAgICAgPSB2YXIua2V5X3Blcm1pc3Npb25zCn0K", "path":"/Shared/notebooksimport/main2.tf", "format":"SOURCE", "language":"SCALA", "overwrite":true }'   
+        
+    - name: read and deploy
+      run: |
+       TOKEN=${{ env.TOKEN }}
+       DATABRICKS_HOST=${{ env.DATABRICKS_DEV_HOST }}
+       REPO_PATH="./notebooks"
+       DATABRICKS_PATH="/Shared/notebooksimport"
+      
+       find "$REPO_PATH" -type f | while read -r file; do
+        filename=$file
+        echo "File $filename is being imported to Databricks..."
+        base64_content=$(base64 -w 0 "$file")
+        curl -X POST \
+          -H "Authorization: Bearer $TOKEN" \
+          -F path="$DATABRICKS_PATH/$filename" \
+          -F format="SOURCE" \
+          -F content="$base64_content" \
+          "$DATABRICKS_HOST/api/2.0/workspace/import"
+       done 
+        
