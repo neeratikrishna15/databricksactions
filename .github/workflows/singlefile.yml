@@ -58,5 +58,5 @@ jobs:
           echo "$mkdirs_json"
           curl -X POST  "${{ env.DATABRICKS_DEV_HOST }}/api/2.0/workspace/mkdirs" \
           -H "Authorization: Bearer ${{ env.TOKEN }}" \
-          -d '"$mkdirs_json"'
+          -d "${mkdirs_json}"
         done
