@@ -53,5 +53,5 @@ jobs:
           echo ${filebase64}
           curl -X POST  ${{ env.DATABRICKS_DEV_HOST }}/api/2.0/workspace/import \
           -H 'Authorization: Bearer ${{ env.TOKEN }}' \
-          -d '{ "content":"${{ env.filebase64 }}", "path":"/Shared/notebooksimport/${file}", "format":"AUTO" }'
+          -d '{ "content":"${{ env.filebase64 }}", "path":"/Shared/notebooksimport/${file}", "format":"AUTO","overwrite": true }'
         done
