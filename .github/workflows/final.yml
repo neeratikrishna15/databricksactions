@@ -36,6 +36,18 @@ jobs:
         path: '${{ github.workspace }}/NOTEBOOKS'
     - name: list files
       run: |
+      
+          # Loop through each file in the directory
+          for file in NOTEBOOKS/*; do
+              # Check if the file exists
+              if [ -f "$file" ]; then
+                  # Get the absolute path of the file
+                  absolute_path=$(realpath "$file")
+                  echo "Absolute path of $file: $absolute_path"
+              fi
+          done
+      
+      
           pwd;ls -l notebooks;mynotebook=$(base64 notebooks/notebook1.py) >> $GITHUB_ENV
           echo '${{ github.workspace }}'
           #file=base64 notebook1 >> $GITHUB_ENV
