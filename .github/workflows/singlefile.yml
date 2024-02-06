@@ -56,9 +56,9 @@ jobs:
           echo ${filebase64}
           mkdirs_json="{ \"content\": \"$filebase64\", \"path\": \"/Shared/notebooksimport/$filepath\", \"format\": \"AUTO\", \"overwrite\": true }"
           echo ${mkdirs_json}
-        #   curl -X POST  ${{ env.DATABRICKS_DEV_HOST }}/api/2.0/workspace/mkdirs \
-        #   -H 'Authorization: Bearer ${{ env.TOKEN }}' \
-        #   -d '{ "content":"${{ env.filebase64 }}", "path":"/Shared/notebooksimport/$filepath", "format":"AUTO","overwrite": true }'
+          curl -X POST  ${{ env.DATABRICKS_DEV_HOST }}/api/2.0/workspace/mkdirs \
+          -H 'Authorization: Bearer ${{ env.TOKEN }}' \
+          -d "$mkdirs_json"
         done
         
           
