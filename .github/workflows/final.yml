@@ -34,28 +34,26 @@ jobs:
       with:
         name: 'notebooks'
         path: '${{ github.workspace }}/NOTEBOOKS'
-    - name: list files
-      run: |
+    # - name: list files
+    #   run: |
       
-          # Loop through each file in the directory
-          for file in NOTEBOOKS/*; do
-              # Check if the file exists
-              if [ -f "$file" ]; then
-                  # Get the absolute path of the file
-                  absolute_path=$(realpath "$file")
-                  echo "Absolute path of $file: $absolute_path"
-              fi
-          done
+    #       # Loop through each file in the directory
+    #       for file in NOTEBOOKS/*; do
+    #           # Check if the file exists
+    #           if [ -f "$file" ]; then
+    #               # Get the absolute path of the file
+    #               absolute_path=$(realpath "$file")
+    #               echo "Absolute path of $file: $absolute_path"
+    #           fi
+    #       done
       
       
-          pwd;ls -l notebooks;mynotebook=$(base64 notebooks/notebook1.py) >> $GITHUB_ENV
-          echo '${{ github.workspace }}'
-          #file=base64 notebook1 >> $GITHUB_ENV
-          #echo ${{ env.mynotebook }}
-      shell: bash    
-    - name: get the list of files along with path
-      run: |
-          find ./notebooks -type f -name "*" -print0 | while IFS= read -r -d '' file; do echo "Processing file: $file"; done
+    #       pwd;ls -l notebooks;mynotebook=$(base64 notebooks/notebook1.py) >> $GITHUB_ENV
+    #       echo '${{ github.workspace }}'
+    #       #file=base64 notebook1 >> $GITHUB_ENV
+    #       #echo ${{ env.mynotebook }}
+    #   shell: bash    
+    
       #working-directory: notebooks
     - name: Print secret
       env:
@@ -80,26 +78,10 @@ jobs:
        echo  "TOKEN=$(az account get-access-token --resource ${{ env.DATABRICKS_ID}} \
        --query 'accessToken' --output tsv)" >> $GITHUB_ENV
         # import notebooks from repo to shared workspace
-    - name: Import notebooks
+    - name: get the list of files and import
       run: |
-        curl -X POST  ${{ env.DATABRICKS_DEV_HOST }}/api/2.0/workspace/import -H 'Authorization: Bearer ${{ env.TOKEN }}'  -d '{ "content":"cmVzb3VyY2UgImF6dXJlcm1fa2V5X3ZhdWx0X2FjY2Vzc19wb2xpY3kiICJrdmFwIiB7CiAga2V5X3ZhdWx0X2lkID0gdmFyLmtleV92YXVsdF9pZAogIHRlbmFudF9pZCAgICA9IHZhci50ZW5hbnRfaWQKICBvYmplY3RfaWQgICAgPSB2YXIub2JqZWN0X2lkCgogIHNlY3JldF9wZXJtaXNzaW9ucyAgICAgID0gdmFyLnNlY3JldF9wZXJtaXNzaW9ucwogIGNlcnRpZmljYXRlX3Blcm1pc3Npb25zID0gdmFyLmNlcnRpZmljYXRlX3Blcm1pc3Npb25zCiAga2V5X3Blcm1pc3Npb25zICAgICAgICAgPSB2YXIua2V5X3Blcm1pc3Npb25zCn0K", "path":"/Shared/notebooksimport/main2.tf", "format":"SOURCE", "language":"SCALA", "overwrite":true }'   
-        
-    - name: read and deploy
-      run: |
-       TOKEN=${{ env.TOKEN }}
-       DATABRICKS_HOST=${{ env.DATABRICKS_DEV_HOST }}
-       REPO_PATH="./notebooks"
-       DATABRICKS_PATH="/Shared/notebooksimport"
-      
-       find "$REPO_PATH" -type f | while read -r file; do
-        filename=$file
-        echo "File $filename is being imported to Databricks..."
-        base64_content=$(base64 -w 0 "$file")
-        curl -X POST \
-          -H "Authorization: Bearer $TOKEN" \
-          -F path="$DATABRICKS_PATH/$filename" \
-          -F format="SOURCE" \
-          -F content="$base64_content" \
-          "$DATABRICKS_HOST/api/2.0/workspace/import"
-       done 
-        
+        find ./notebooks -type f -name "*" -print0 | while IFS= read -r -d '' file; do echo "Processing file: $file";filebase64=base64 $file >> $GITHUB_ENV
+        curl -X POST  ${{ env.DATABRICKS_DEV_HOST }}/api/2.0/workspace/import -H 'Authorization: Bearer ${{ env.TOKEN }}'  -d '{ "content":"${{ env.filebase64 }}", "path":"/Shared/notebooksimport/$file", "format":"SOURCE", "overwrite":true }'       
+            done
+       
+    
