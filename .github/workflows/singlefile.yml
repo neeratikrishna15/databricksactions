@@ -54,11 +54,11 @@ jobs:
           echo ${{ env.filepath }}
           filebase64=$(base64 $file) >> $GITHUB.env
           echo ${filebase64}
-          mkdirs_json="{ \"content\": \"$filebase64\", \"path\": \"/Shared/notebooksimport/$filepath\", \"format\": \"AUTO\", \"overwrite\": true }" >> GITHUB_ENV
+          mkdirs_json="{ \"content\": \"$filebase64\", \"path\": \"/Shared/notebooksimport/$filepath\", \"format\": \"AUTO\", \"overwrite\": true }"
           echo ${mkdirs_json}
           curl -X POST  ${{ env.DATABRICKS_DEV_HOST }}/api/2.0/workspace/mkdirs \
           -H 'Authorization: Bearer ${{ env.TOKEN }}' \
-          -d '${{ env.mkdirs_json }}'
+          -d ${mkdirs_json}
         done
         
           
