@@ -95,12 +95,11 @@ jobs:
   
           echo "File without Extension is: $fname"
   
-          echo "curl -F language=$language -F path=$notebookPathUnderWorkspace/$fname -F content=@$fname https://$workspaceUrl/api/2.0/workspace/import"
+          echo "curl -F language=$language -F path=$notebookPathUnderWorkspace/$fname -F content=@$fname https://$DATABRICKS_DEV_HOST/api/2.0/workspace/import"
   
-          curl -n https://$workspaceUrl/api/2.0/workspace/import \
-              -H "Authorization:Bearer $accessToken" \
-              -H "X-Databricks-Azure-SP-Management-Token: $managementToken" \
-              -H "X-Databricks-Azure-Workspace-Resource-Id: $resourceId" \
+          curl -n https://$DATABRICKS_DEV_HOST/api/2.0/workspace/import \
+              -H "Authorization:Bearer ${{ env.TOKEN }}" \
+              
               -F language="$language" \
               -F overwrite=true \
               -F path="$notebookPathUnderWorkspace/$fname" \
