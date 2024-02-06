@@ -55,8 +55,8 @@ jobs:
           filebase64=$(base64 "$file")
           echo "$filebase64"
           mkdirs_json="{ \"content\": \"$filebase64\", \"path\": \"/Shared/notebooksimport/$filepath\", \"format\": \"AUTO\", \"overwrite\": true }"
-          echo "$mkdirs_json"
+          echo "$mkdirs_json" | jq -c '.' > temp.json
           curl -X POST  "${{ env.DATABRICKS_DEV_HOST }}/api/2.0/workspace/mkdirs" \
           -H "Authorization: Bearer ${{ env.TOKEN }}" \
-          -d "${mkdirs_json}"
+          -d @temp.json
         done
