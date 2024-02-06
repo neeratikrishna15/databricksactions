@@ -1,0 +1,64 @@
+name: New Final Deployment
+
+on: 
+  push:
+    branches:
+      - main
+
+env:
+  DATABRICKS_DEV_HOST: 'https://adb-2581107687693310.10.azuredatabricks.net'
+  DATABRICKS_DEV_DIR: '/Workspace/Shared/Notebooks/'
+  DATABRICKS_ID: '2ff814a6-3304-4ab8-85cb-cd0e6f879c1d'
+
+jobs:
+  dev_deployment:
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+    - name: checkout repo
+      uses: actions/checkout@v3
+      
+    - name: publish artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: 'notebooks'
+        path: '${{ github.workspace }}/NOTEBOOKS'
+      
+    - name: Print secret
+      env:
+        SECRET_VALUE: ${{ secrets.DATABRICKS_SP_ID }}
+      run: |
+       echo "The secret value is:" ${SECRET_VALUE}
+     
+    - name: login to azure
+      env:
+        DATABRICKS_SP_ID: ${{ secrets.DATABRICKS_SP_ID }}
+        AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+        DATABRICKS_SP_SECRET: ${{ secrets.DATABRICKS_SP_SECRET }}
+      run: |
+        az login --service-principal -u "$DATABRICKS_SP_ID" \
+        -p "$DATABRICKS_SP_SECRET" -t "$AZURE_TENANT_ID" 
+    
+    - name: get aad token
+      id: token
+      run: |
+       echo  "TOKEN=$(az account get-access-token --resource ${{ env.DATABRICKS_ID}} \
+       --query 'accessToken' --output tsv)" >> $GITHUB_ENV
+    
+    - name: get the list of files and import
+      run: |
+        find ./notebooks -type f -name "*" -print0 | while IFS= read -r -d '' file; do
+          echo "Processing file: $file"
+          filebase64=$(base64 $file) >> $GITHUB.env
+          echo ${filebase64}
+          # Extract the directory path
+          dir_path=$(dirname "$file")
+          # Create directories in Databricks
+          curl -X POST  ${{ env.DATABRICKS_DEV_HOST }}/api/2.0/workspace/mkdirs \
+          -H 'Authorization: Bearer ${{ env.TOKEN }}' \
+          -d '{ "path":"/Shared/notebooksimport/'"$dir_path"'", "create_parent": true }'
+          # Import the file
+          curl -X POST  ${{ env.DATABRICKS_DEV_HOST }}/api/2.0/workspace/import \
+          -H 'Authorization: Bearer ${{ env.TOKEN }}' \
+          -d '{ "content":"${{ env.filebase64 }}", "path":"/Shared/notebooksimport/'"$dir_path"'", "format":"AUTO","overwrite": true }'
+        done
