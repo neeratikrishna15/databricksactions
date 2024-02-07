@@ -1,9 +1,7 @@
 name: teritho Deployment
 
 on: 
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 env:
   DATABRICKS_DEV_HOST: 'https://adb-2581107687693310.10.azuredatabricks.net'
