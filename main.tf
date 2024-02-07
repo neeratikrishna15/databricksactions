@@ -5,11 +5,11 @@ terraform {
       version = "3.88.0"
     }
   }
-  backend "azurerm" {
-    resource_group_name = "ngktest"
-    storage_account_name = "ngktfstate45001"
-    container_name = "tfstate"
-    key = "dev.tfstate"
+ backend "azurerm" {
+    resource_group_name  = "testngk"
+    storage_account_name = "ngkterraform4517"
+    container_name       = "tfstate"
+    key                  = "personal.tfstate"
   }
 }
 
@@ -18,10 +18,11 @@ terraform {
 # Define your Azure provider and authentication details
 provider "azurerm" {
   features  {}
-  subscription_id = "4daf5ca9-14c9-431c-b6aa-90ec0451f571"
-  client_id       = "8f440acc-b84f-4178-843e-0e56c3b54a74"
-  client_secret   = "kdI8Q~s6pQAy3Wd1ocKcLe9zjuUIifBWamd8fa8M"
-  tenant_id       = "ec25f121-f9c4-4650-a39c-47cd1939fe8b"
+  client_id                   = "485f45e2-a017-4b10-bd25-f1476ea05be1"
+  #client_certificate_password = var.client_certificate_password
+  client_secret    = "5_V8Q~YMSZUR7-ZN61JOjKLWrzalXewcwQ6Y5b_8"
+  tenant_id                   = "051f26d8-2bfb-447a-a6b2-d04a33c5afa6"
+  subscription_id             = "ac7b009e-5876-4ffe-8832-73ad9124d63f"
 }
 
 # Define the resource group
