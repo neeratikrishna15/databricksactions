@@ -1,0 +1,50 @@
+---
+name: Create or Update Secret
+about: Provide details to create or update a secret in Azure Key Vault
+title: '[Secret] Create/Update Secret Request'
+labels: secret
+assignees: ''
+
+body:
+  - type: input
+    id: secret_name
+    attributes:
+      label: Name of the secret
+      description: The name of the secret you want to create or update.
+      placeholder: sn-kv-scope-nas-drive-id
+      value: sn-kv-scope-nas-drive-id
+    validations:
+      required: true
+
+  - type: input
+    id: secret_value
+    attributes:
+      label: Value of the secret
+      description: The value of the secret.
+      placeholder: YourSecretValue
+    validations:
+      required: true
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Environment
+      description: Select the environment where the secret will be used.
+      options:
+        - dev
+        - prod
+    validations:
+      required: true
+      default: dev
+
+  - type: dropdown
+    id: action
+    attributes:
+      label: Action
+      description: Select whether to create a new secret or update an existing one.
+      options:
+        - create
+        - update
+    validations:
+      required: true
+      default: create
