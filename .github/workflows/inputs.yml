@@ -1,0 +1,34 @@
+name: withinoutsecret
+
+on:
+  workflow_dispatch:
+    inputs:
+      secret_name:
+        description: 'The name of the secret'
+        required: true
+        type: string
+      secret_value:
+        description: 'The value of the secret'
+        required: true
+        type: string
+
+jobs:
+  retrieve_secrets:
+    runs-on: ubuntu-latest
+    env:
+      ENVIRONMENT: dev
+      ARM_CLIENT_ID: 4be60513-11b5-488c-acd5-5e5b99883e6a
+      ARM_CLIENT_SECRET: ${{ secrets.DEV_ARM_CLIENT_SECRET }}
+      ARM_SUBSCRIPTION_ID: f02a5007-aa69-4348-b4d6-76fb69d10ae3
+      ARM_TENANT_ID: db05faca-c82a-4b9d-b9c5-0f64b6755421
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Azure CLI
+        run: curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+      - name: "Login to Azure"
+        run: az login --allow-no-subscriptions --service-principal -u $ARM_CLIENT_ID -p=${{ secrets.DEV_ARM_CLIENT_SECRET }} --tenant $ARM_TENANT_ID
+      - name: "Create Secret"
+        env:
+          SECRET_NAME: ${{ github.event.inputs.secret_name }}
+          SECRET_VALUE: ${{ github.event.inputs.secret_value }}
+        run: az keyvault secret set --description "" --name $SECRET_NAME --value $SECRET_VALUE --vault-name "kv-oon-dev-eandi-01"
