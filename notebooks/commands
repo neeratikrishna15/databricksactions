@@ -1,1 +1,15 @@
 az keyvault secret list --vault-name <YourKeyVaultName> --query "[].{Name:name, Value:@{join(' ',[].value)}}" -o table
+
+# Variables
+sourceVault="<SourceKeyVaultName>"
+targetVault="<TargetKeyVaultName>"
+
+# Loop through all secrets in the source vault
+for secretName in $(az keyvault secret list --vault-name $sourceVault --query "[].name" -o tsv); do
+    # Get the secret value from the source vault
+    secretValue=$(az keyvault secret show --vault-name $sourceVault --name $secretName --query "value" -o tsv)
+    
+    # Set the secret in the target vault
+    az keyvault secret set --vault-name $targetVault --name $secretName --value "$secretValue"
+done
+
