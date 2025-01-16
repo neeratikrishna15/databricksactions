@@ -13,3 +13,70 @@ for secretName in $(az keyvault secret list --vault-name $sourceVault --query "[
     az keyvault secret set --vault-name $targetVault --name $secretName --value "$secretValue"
 done
 
+
+       language=""
+       if [[ "$filename" == *sql ]]
+       then
+           language="SQL"
+           ext=${filename##*.}
+           fname=`basename $filename .$ext`
+           echo "SQL FileName: $fname and Ext $ext"
+           mv $filename $fname
+       fi
+
+       if [[ "$filename" == *scala ]]
+       then
+           language="SCALA"
+       fi
+
+       if [[ "$filename" == *py ]]
+       then
+           language="PYTHON"
+           ext=${filename##*.}
+           fname=`basename $filename .$ext`
+           echo "Python FileName: $fname and Ext $ext"
+           mv $filename $fname
+       fi
+
+       if [[ "$filename" == *r ]]
+       then
+           language="R"
+           ext=${filename##*.}
+           fname=`basename $filename .$ext`
+           echo "R FileName: $fname and Ext $ext"
+           mv $filename $fname
+       fi
+
+       if [[ "$filename" == *ipynb ]]
+       then
+           language="PYTHON"
+           ext=${filename##*.}
+           fname=`basename $filename .$ext`
+           echo "Python FileName: $fname and Ext $ext"
+           mv $filename $fname
+       fi
+       
+       if [[ "$filename" == *.txt ]]
+       then
+           language="TEXT"
+           ext=${filename##*.}
+           fname=`basename $filename .$ext`
+           echo "Text FileName: $fname and Ext $ext"
+           mv $filename $fname
+       fi
+       echo "File without Extension is: $fname"
+
+       echo "curl -F language=$language -F path=$pathOnDatabricks/$filepath/$fname -F content=@$fname https://$workspaceUrl/api/2.0/workspace/import"
+
+       curl -v -n https://$workspaceUrl/api/2.0/workspace/import \
+           -H "Authorization:Bearer $accessToken" \
+           -H "X-Databricks-Azure-SP-Management-Token: $managementToken" \
+           -H "X-Databricks-Azure-Workspace-Resource-Id: $resourceId" \
+           -F language="$language" \
+           -F overwrite=true \
+           -F path="$pathOnDatabricks/$filepath/$fname" \
+           -F content=@"$fname"       
+
+       echo "File Processed: $file"
+   done
+done
