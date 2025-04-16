@@ -1,0 +1,304 @@
+name: DATA-ENGINEERING-DATAB-CI-CD
+
+on:
+# Triggers the workflow on push or pull request events for the main branch
+  push:
+    branches: [ development, main ]
+    paths: ["DATA_ENGINEERING/**", ".github/workflows/DATA-ENGINEERING-DATABRICKS-CI-CD.yml", "deployment-scripts/**", "groups/**"]
+  pull_request:
+    branches: [ development, main ]
+    paths: ["DATA_ENGINEERING/**", ".github/workflows/DATA-ENGINEERING-DATABRICKS-CI-CD.yml", "deployment-scripts/**", "groups/**"]
+env:
+  Notebook_Deployment_Path: /DATA_ENGINEERING/
+
+jobs:
+  #################################################################
+  # Builds the code
+  # This is packaging up the files from Git to the Artifacts files
+  #################################################################
+  Set_Env_Per_Branch:
+    name: Set Env Per Branch
+    runs-on:
+      - uhg-runner
+    outputs:
+      env_branch: ${{ steps.setvars.outputs.environment }}
+    steps:
+    - name: checkout
+      uses: actions/checkout@v3.5.0
+    - name: Set Branch Variables
+      id: setvars
+      run: |
+        if [[ "${{github.base_ref}}" == "main" || "${{github.ref}}" == "refs/heads/main" ]]; then
+          echo "environment=prod" >> $GITHUB_OUTPUT
+        fi
+
+        if [[ "${{github.base_ref}}" == "staging" || "${{github.ref}}" == "refs/heads/staging" ]]; then
+          echo "environment=stage" >> $GITHUB_OUTPUT
+        fi
+
+        if [[ "${{github.base_ref}}" == "development" || "${{github.ref}}" == "refs/heads/development" ]]; then
+          echo "environment=dev" >> $GITHUB_OUTPUT
+        fi
+    - name: Print Environment based on Branch
+      run: |
+          echo "Branch environment is: ${{ steps.setvars.outputs.environment }}"
+  
+  Build:
+    needs: Set_Env_Per_Branch
+    runs-on: { group: ubuntu-uhg }
+    # Checkout code
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    # Show the environment variables for debugging
+    - name: Display Environment Variable
+      uses: azure/powershell@v1
+      with:
+        inlineScript: |
+          dir env:
+        azPSVersion: '3.1.0'
+
+    # Publish Artifact: Databricks Notebooks
+    - name: 'Publish Artifact: Notebooks' 
+      uses: actions/upload-artifact@v4
+      with:
+        name: 'notebooks'
+        path: '${{ github.workspace }}${{ env.Notebook_Deployment_Path }}'
+
+    # Publish Artifact: Databricks-Init-Scripts
+    - name: 'Publish Artifact: Databricks-Init-Scripts' 
+      uses: actions/upload-artifact@v4
+      with:
+        name: 'init-scripts'
+        path: '${{ github.workspace }}/init-scripts'
+
+    # Publish Artifact: Databricks-Deployment-Scripts
+    - name: 'Publish Artifact: Databricks-Deployment-Scripts' 
+      uses: actions/upload-artifact@v4
+      with:
+        name: 'deployment-scripts'
+        path: '${{ github.workspace }}/deployment-scripts'
+    
+    # Publish Artifact: Groups
+    - name: 'Publish Artifact: Groups' 
+      uses: actions/upload-artifact@v4
+      with:
+        name: 'groups'
+        path: '${{ github.workspace }}/groups'
+  
+  Publish_Artifactory:
+    needs: Build
+    name: Publish to Artifactory
+    runs-on: 
+      - uhg-runner
+    steps:
+    # Download Artifact: Databricks Notebooks
+    - name: 'Download Artifact: Databricks Notebooks' 
+      uses: actions/download-artifact@v4
+      with:
+        name: 'notebooks'
+        path: ${{ github.workspace }}${{ env.Notebook_Deployment_Path }}
+        
+    # Download Artifact: Databricks-Init-Scripts
+    - name: 'Download Artifact: Databricks-Init-Scripts' 
+      uses: actions/download-artifact@v4
+      with:
+        name: 'init-scripts'
+        path: ${{ github.workspace }}/init-scripts
+
+    # Download Artifact: Deployment Scripts
+    - name: 'Download Artifact: Deployment Scripts' 
+      uses: actions/download-artifact@v4
+      with:
+        name: 'deployment-scripts'
+        path: ${{ github.workspace }}/deployment-scripts
+    
+    # Download Artifact: Groups
+    - name: 'Download Artifact: Groups' 
+      uses: actions/download-artifact@v4
+      with:
+        name: 'groups'
+        path: ${{ github.workspace }}/groups
+
+    - name: Tar_Notebooks_For_Upload
+      shell: bash
+      run: |
+        tar -czvf ${{ github.event.repository.name }}-${{github.run_number}}.tar.gz ${{ github.workspace }}${{ env.Notebook_Deployment_Path }} ${{ github.workspace }}/init-scripts ${{ github.workspace }}/deployment-scripts
+    
+    - name: Upload_NoteBooks_to_Artifactory_Repo
+      shell: bash
+      run: |
+        curl -u${{ secrets.ARTIFACTORYREPOUSER }}:${{ secrets.ARTIFACTORYREPOPASSWORD }} -X PUT -T "${{ github.event.repository.name }}-${{github.run_number}}.tar.gz" "https://repo1.uhc.com/artifactory/generic-local/com/optum/databricks//${{ env.Notebook_Deployment_Path }}/${{ github.event.repository.name }}/${GITHUB_REF##*/}/${{ github.event.repository.name }}-${{github.run_number}}.tgz"
+    
+    - name: Push_Latest_to_Artifactory_if_Main_Build
+      shell: bash
+      if: github.ref == 'refs/heads/main'
+      run: |
+        curl -u${{ secrets.ARTIFACTORYREPOUSER }}:${{ secrets.ARTIFACTORYREPOPASSWORD }} -X PUT -T "${{ github.event.repository.name }}-${{github.run_number}}.tar.gz" "https://repo1.uhc.com/artifactory/generic-local/com/optum/databricks//${{ env.Notebook_Deployment_Path }}/${{ github.event.repository.name }}/${GITHUB_REF##*/}/latest.tgz"
+  
+  #############################################################
+  # Deploy to Dev  
+  #############################################################
+  Deploy-To-Dev:
+    if: github.ref == 'refs/heads/development'
+    needs: [Build, Set_Env_Per_Branch, Publish_Artifactory]
+    runs-on: { group: ubuntu-uhg }
+    env:
+      RESOURCE_GROUP_NAME: rg-oon-${{ needs.Set_Env_Per_Branch.outputs.env_branch }}-eandi-01
+      DATAB_WORKSPACE_NAME: dbw-oon-${{ needs.Set_Env_Per_Branch.outputs.env_branch }}-eandi-02
+      KEY_VAULT_NAME: kv-oon-${{ needs.Set_Env_Per_Branch.outputs.env_branch }}-eandi-01
+
+    steps:
+    # Show the environment variables for debugging
+    - name: Display Environment Variable
+      uses: azure/powershell@v1
+      with:
+        inlineScript: |
+          dir env:
+        azPSVersion: '3.1.0'
+   
+    # Download Artifact: Databricks Notebooks
+    - name: 'Download Artifact: Databricks Notebooks' 
+      uses: actions/download-artifact@v4
+      with:
+        name: 'notebooks'
+        path: ${{ github.workspace }}${{ env.Notebook_Deployment_Path }}
+
+    # Download Artifact: Databricks-Init-Scripts
+    - name: 'Download Artifact: Databricks-Init-Scripts' 
+      uses: actions/download-artifact@v4
+      with:
+        name: 'init-scripts'
+        path: ${{ github.workspace }}/init-scripts
+
+    # Download Artifact: Deployment Scripts
+    - name: 'Download Artifact: Deployment Scripts' 
+      uses: actions/download-artifact@v4
+      with:
+        name: 'deployment-scripts'
+        path: ${{ github.workspace }}/deployment-scripts
+    
+    # Download Artifact: Groups
+    - name: 'Download Artifact: Groups' 
+      uses: actions/download-artifact@v4
+      with:
+        name: 'groups'
+        path: ${{ github.workspace }}/groups
+
+    # Login to Azure
+    - name: Login via Az module
+      uses: azure/login@v1.4.6
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+        # set this if you will be using PowerShell
+        # enable-AzPSSession: true
+    
+    # Get Secrets from Keyvault    
+    - name: Download KeyVault Secrets
+      uses: azure/CLI@v1
+      with:
+        inlineScript: |
+          echo databricks-subscription-id=$(az keyvault secret show --vault-name ${{ env.KEY_VAULT_NAME }} --name databricks-dev-ops-subscription-id --query value) >> $GITHUB_ENV
+          echo databricks-tenant-id=$(az keyvault secret show --vault-name ${{ env.KEY_VAULT_NAME }} --name databricks-dev-ops-tenant-id --query value) >> $GITHUB_ENV
+          echo databricks-client-id=$(az keyvault secret show --vault-name ${{ env.KEY_VAULT_NAME }} --name databricks-dev-ops-client-id --query value) >> $GITHUB_ENV
+          echo databricks-client-secret=$(az keyvault secret show --vault-name ${{ env.KEY_VAULT_NAME }} --name databricks-dev-ops-client-secret --query value) >> $GITHUB_ENV
+     
+    # Deploy Init Scripts
+    - name:  Deploy your Databricks Init Scripts to dbfa:/init-scripts folder on DBFS
+    #  if: ${{ github.event.inputs.MODE == 'Databricks' }}
+      run: |
+        cd "$GITHUB_WORKSPACE/init-scripts"
+        chmod +x $GITHUB_WORKSPACE/deployment-scripts/deploy-init-scripts.sh
+        $GITHUB_WORKSPACE/deployment-scripts/deploy-init-scripts.sh ${{ env.databricks-tenant-id }} ${{ env.databricks-client-id }} ${{ env.databricks-client-secret }} ${{ env.databricks-subscription-id }} ${{ env.RESOURCE_GROUP_NAME }} ${{ env.DATAB_WORKSPACE_NAME }}
+   
+    # Deploy Databricks Notebooks
+    - name: Deploy Databricks Notebooks
+      #if: ${{ github.event.inputs.MODE == 'Databricks' }}
+      run: |
+        cd "$GITHUB_WORKSPACE${{ env.Notebook_Deployment_Path }}"
+        chmod +x $GITHUB_WORKSPACE/deployment-scripts/deploy-script.sh
+        $GITHUB_WORKSPACE/deployment-scripts/deploy-script.sh ${{ env.databricks-tenant-id }} ${{ env.databricks-client-id }} ${{ env.databricks-client-secret }} ${{ env.databricks-subscription-id }} ${{ env.RESOURCE_GROUP_NAME }} ${{ env.DATAB_WORKSPACE_NAME }} ${{ env.Notebook_Deployment_Path }}
+
+#############################################################
+# Deploy to Prod
+#############################################################
+  Deploy-To-Prod:
+    if: github.ref == 'refs/heads/main'
+    needs: [Build, Set_Env_Per_Branch,Publish_Artifactory]
+    runs-on: { group: ubuntu-uhg }
+    env:
+      RESOURCE_GROUP_NAME: rg-oon-${{ needs.Set_Env_Per_Branch.outputs.env_branch }}-eandi-01
+      DATAB_WORKSPACE_NAME: dbw-oon-${{ needs.Set_Env_Per_Branch.outputs.env_branch }}-eandi-02
+      KEY_VAULT_NAME: kv-oon-${{ needs.Set_Env_Per_Branch.outputs.env_branch }}-eandi-01
+
+    steps:
+    # Show the environment variables for debugging
+    - name: Display Environment Variable
+      uses: azure/powershell@v1
+      with:
+        inlineScript: |
+          dir env:
+        azPSVersion: '3.1.0'
+   
+    # Download Artifact: Databricks Notebooks
+    - name: 'Download Artifact: Databricks Notebooks' 
+      uses: actions/download-artifact@v4
+      with:
+        name: 'notebooks'
+        path: ${{ github.workspace }}${{ env.Notebook_Deployment_Path }}
+
+    # Download Artifact: Databricks-Init-Scripts
+    - name: 'Download Artifact: Databricks-Init-Scripts' 
+      uses: actions/download-artifact@v4
+      with:
+        name: 'init-scripts'
+        path: ${{ github.workspace }}/init-scripts
+
+    # Download Artifact: Deployment Scripts
+    - name: 'Download Artifact: Deployment Scripts' 
+      uses: actions/download-artifact@v4
+      with:
+        name: 'deployment-scripts'
+        path: ${{ github.workspace }}/deployment-scripts
+
+    # Download Artifact: Groups
+    - name: 'Download Artifact: Groups' 
+      uses: actions/download-artifact@v4
+      with:
+        name: 'groups'
+        path: ${{ github.workspace }}/groups
+
+    # Login to Azure
+    - name: Login via Az module
+      uses: azure/login@v1.4.6
+      with:
+        creds: ${{ secrets.AZURE_PROD_CREDENTIALS }}
+        # set this if you will be using PowerShell
+        # enable-AzPSSession: true
+    
+    # Get Secrets from Keyvault    
+    - name: Download KeyVault Secrets
+      uses: azure/CLI@v1
+      with:
+        inlineScript: |
+          echo databricks-subscription-id=$(az keyvault secret show --vault-name ${{ env.KEY_VAULT_NAME }} --name databricks-dev-ops-subscription-id --query value) >> $GITHUB_ENV
+          echo databricks-tenant-id=$(az keyvault secret show --vault-name ${{ env.KEY_VAULT_NAME }} --name databricks-dev-ops-tenant-id --query value) >> $GITHUB_ENV
+          echo databricks-client-id=$(az keyvault secret show --vault-name ${{ env.KEY_VAULT_NAME }} --name databricks-dev-ops-client-id --query value) >> $GITHUB_ENV
+          echo databricks-client-secret=$(az keyvault secret show --vault-name ${{ env.KEY_VAULT_NAME }} --name databricks-dev-ops-client-secret --query value) >> $GITHUB_ENV
+
+    # Deploy Init Scripts
+    - name:  Deploy your Databricks Init Scripts to dbfa:/init-scripts folder on DBFS
+    #  if: ${{ github.event.inputs.MODE == 'Databricks' }}
+      run: |
+        cd "$GITHUB_WORKSPACE/init-scripts"
+        chmod +x $GITHUB_WORKSPACE/deployment-scripts/deploy-init-scripts.sh
+        $GITHUB_WORKSPACE/deployment-scripts/deploy-init-scripts.sh ${{ env.databricks-tenant-id }} ${{ env.databricks-client-id }} ${{ env.databricks-client-secret }} ${{ env.databricks-subscription-id }} ${{ env.RESOURCE_GROUP_NAME }} ${{ env.DATAB_WORKSPACE_NAME }}
+   
+    # Deploy Databricks Notebooks
+    - name: Deploy Databricks Notebooks
+      #if: ${{ github.event.inputs.MODE == 'Databricks' }}
+      run: |
+        cd "$GITHUB_WORKSPACE${{ env.Notebook_Deployment_Path }}"
+        chmod +x $GITHUB_WORKSPACE/deployment-scripts/deploy-script.sh
+        $GITHUB_WORKSPACE/deployment-scripts/deploy-script.sh ${{ env.databricks-tenant-id }} ${{ env.databricks-client-id }} ${{ env.databricks-client-secret }} ${{ env.databricks-subscription-id }} ${{ env.RESOURCE_GROUP_NAME }} ${{ env.DATAB_WORKSPACE_NAME }} ${{ env.Notebook_Deployment_Path }}
